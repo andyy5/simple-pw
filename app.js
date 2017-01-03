@@ -47,6 +47,7 @@ class App {
             .command('delete', 'Delete existing record', {
                 title: titleOpt
             })
+            .command('gen', 'Generate random password')
             .help()
             .argv;
 
@@ -55,7 +56,8 @@ class App {
         if (command === 'create') {
             let success = Record.addRecord(argv.title, argv.username, argv.password);
             if (success) {
-                console.log('Record created.')
+                console.log('Record created.');
+                Record.logPwStrength(argv.password);
             } else {
                 console.log('Failed. Record title already exists.')
             }
@@ -72,15 +74,21 @@ class App {
 
         } else if (command === 'all') {
             let results = Record.getAllRecords();
-            for (var i = 0; i < results.length; i++) {
-                Record.logRec(results[i]);
-                console.log("");
+            if (results.length === 0) {
+                console.log('No records');
+            } else {
+                for (let i = 0; i < results.length; i++) {
+                    results[i].ePw = Record.decryptPw(results[i].title, results[i].ePw);
+                    Record.logRec(results[i]);
+                    console.log("");
+                }
             }
 
         } else if (command === 'update') {
             let success = Record.updateRecord(argv.title, argv.username, argv.password);
             if (success) {
-                console.log('Record updated.')
+                console.log('Record updated.');
+                Record.logPwStrength(argv.password);
             } else {
                 console.log('Failed. Record title does not exist.')
             }
@@ -92,6 +100,9 @@ class App {
             } else {
                 console.log('Failed. Record title does not exist.')
             }
+
+        } else if (command === 'gen') {
+            console.log('Password: ' + Record.generatePw());
 
         } else {
             console.log('command not recognized');
