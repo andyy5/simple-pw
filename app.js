@@ -1,114 +1,67 @@
 const yargs = require('yargs');
-const Records = require('./records.js'); // note: import/export in ES6 not supported by Node yet.
+const Records = require('./records.js');
 
-var Record;
+const record = new Records();
+const title = { describe: 'Title of record', demand: true, alias: 't' };
+const username = { describe: 'Username', demand: true, alias: 'u' };
+const password = { describe: 'Password', demand: true, alias: 'p' };
+const argv = yargs
+  .command('create', 'Create new record', { title, username, password })
+  .command('read', 'Read existing record', { title })
+  .command('all', 'Read all existing records')
+  .command('update', 'Update existing record', { title, username, password })
+  .command('delete', 'Delete existing record', { title })
+  .help().argv;
 
-class App {
-
-    constructor() {
-        Record = new Records();
+switch (argv._[0]) {
+  case 'create': {
+    let isAdded = record.add(argv.title, argv.username, argv.password);
+    if (isAdded) {
+      console.log('Record created.');
+    } else {
+      console.log('Record title already exists.');
     }
-
-    init() {
-
-        var titleOpt = {
-            describe: 'Title of record',
-            demand: true,
-            alias: 't'
-        };
-
-        var usernameOpt = {
-            describe: 'Username',
-            demand: true,
-            alias: 'u'
-        };
-
-        var passwordOpt = {
-            describe: 'Password',
-            demand: true,
-            alias: 'p'
-        };
-
-        var argv = yargs
-            .command('create', 'Create new record', {
-                title: titleOpt,
-                username: usernameOpt,
-                password: passwordOpt
-            })
-            .command('read', 'Read existing record', {
-                title: titleOpt
-            })
-            .command('all', 'Read all existing records')
-            .command('update', 'Update existing record', {
-                title: titleOpt,
-                username: usernameOpt,
-                password: passwordOpt
-            })
-            .command('delete', 'Delete existing record', {
-                title: titleOpt
-            })
-            .command('gen', 'Generate random password')
-            .help()
-            .argv;
-
-        var command = argv._[0];
-
-        if (command === 'create') {
-            let success = Record.addRecord(argv.title, argv.username, argv.password);
-            if (success) {
-                console.log('Record created.');
-                Record.logPwStrength(argv.password);
-            } else {
-                console.log('Failed. Record title already exists.')
-            }
-
-        } else if (command === 'read') {
-            let results = Record.readRecord(argv.title);
-            if (results.length === 1) {
-                Record.logRec(results[0]);
-            } else if (results.length === 0) {
-                console.log('Record does not exist.')
-            } else {
-                console.log('Error.')
-            }
-
-        } else if (command === 'all') {
-            let results = Record.getAllRecords();
-            if (results.length === 0) {
-                console.log('No records');
-            } else {
-                for (let i = 0; i < results.length; i++) {
-                    results[i].ePw = Record.decryptPw(results[i].title, results[i].ePw);
-                    Record.logRec(results[i]);
-                    console.log("");
-                }
-            }
-
-        } else if (command === 'update') {
-            let success = Record.updateRecord(argv.title, argv.username, argv.password);
-            if (success) {
-                console.log('Record updated.');
-                Record.logPwStrength(argv.password);
-            } else {
-                console.log('Failed. Record title does not exist.')
-            }
-
-        } else if (command === 'delete') {
-            let success = Record.deleteRecord(argv.title);
-            if (success) {
-                console.log('Record deleted.')
-            } else {
-                console.log('Failed. Record title does not exist.')
-            }
-
-        } else if (command === 'gen') {
-            console.log('Password: ' + Record.generatePw());
-
-        } else {
-            console.log('command not recognized');
-        }
+    break;
+  }
+  case 'read': {
+    let results = record.get(argv.title);
+    if (results.length === 0) {
+      console.log('Record does not exist.');
+    } else {
+      record.log(results[0]);
     }
+    break;
+  }
+  case 'all': {
+    let results = record.getAll();
+    if (results.length === 0) {
+      console.log('No records.');
+    } else {
+      for (let result of results) {
+        record.log(result);
+        console.log('-------');
+      }
+    }
+    break;
+  }
+  case 'update': {
+    let isUpdated = record.update(argv.title, argv.username, argv.password);
+    if (isUpdated) {
+      console.log('Record updated.');
+    } else {
+      console.log('Record title does not exist.');
+    }
+    break;
+  }
+  case 'delete': {
+    let isDeleted = record.delete(argv.title);
+    if (isDeleted) {
+      console.log('Record deleted.');
+    } else {
+      console.log('Record title does not exist.');
+    }
+    break;
+  }
+  default:
+    console.log('Command not recognized.');
 }
-
-var app = new App();
-app.init();

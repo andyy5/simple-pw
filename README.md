@@ -1,5 +1,21 @@
-Usage: terminal->root dir->npm install
+##### Usage:
 
-View all the commands: node app.js --help
+1. Navigate to directory and run `npm install`
+2. View available commands with `node app.js --help`
 
-Ex: node app.js create -t=netflix -u=andy -p=password
+##### Commands:
+
+```
+create: Create new record
+read: Read existing record
+all: Read all records
+update: Update existing record
+delete: Delete existing record
+```
+
+##### Example:
+
+```
+node app.js create --title=netflix --username=andy --password=password123
+node app.js read --title=netflix
+```
